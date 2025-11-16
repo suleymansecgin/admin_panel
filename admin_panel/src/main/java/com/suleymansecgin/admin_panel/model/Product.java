@@ -36,6 +36,10 @@ public class Product {
     @Column(name = "create_time", nullable = false)
     private LocalDateTime createTime;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+    
     @PrePersist
     protected void onCreate() {
         createTime = LocalDateTime.now();

@@ -94,13 +94,18 @@ export const productService = {
 
   async createProduct(productData) {
     try {
-      console.log('Ürün ekleme isteği:', productData)
+      console.log('Ürün ekleme isteği:', JSON.stringify(productData, null, 2))
       const response = await api.post('/', productData)
       console.log('Ürün ekleme başarılı:', response.data)
       return response.data
     } catch (error) {
       console.error('Ürün ekleme hatası detayı:', error)
-      console.error('Response data:', error.response?.data)
+      console.error('Error response:', error.response)
+      console.error('Response status:', error.response?.status)
+      console.error('Response data:', JSON.stringify(error.response?.data, null, 2))
+      console.error('Request URL:', error.config?.url)
+      console.error('Request method:', error.config?.method)
+      
       if (error.response) {
         const errorData = error.response.data
         let errorMessage = 'Ürün eklenirken bir hata oluştu.'

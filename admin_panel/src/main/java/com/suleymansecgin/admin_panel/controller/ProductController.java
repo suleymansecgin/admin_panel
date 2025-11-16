@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,21 +20,32 @@ public class ProductController {
     
     private final ProductService productService;
     
-    @PostMapping
+    private String getCurrentUsername() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return authentication.getName();
+        }
+        throw new RuntimeException("Kullanıcı kimlik doğrulaması yapılmamış");
+    }
+    
+    @PostMapping(value = {"", "/"})
     public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest request) {
-        ProductResponse response = productService.createProduct(request);
+        String username = getCurrentUsername();
+        ProductResponse response = productService.createProduct(request, username);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     
-    @GetMapping
+    @GetMapping(value = {"", "/"})
     public ResponseEntity<List<ProductResponse>> getAllProducts() {
-        List<ProductResponse> products = productService.getAllProducts();
+        String username = getCurrentUsername();
+        List<ProductResponse> products = productService.getAllProducts(username);
         return ResponseEntity.ok(products);
     }
     
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
-        ProductResponse product = productService.getProductById(id);
+        String username = getCurrentUsername();
+        ProductResponse product = productService.getProductById(id, username);
         return ResponseEntity.ok(product);
     }
     
@@ -40,13 +53,15 @@ public class ProductController {
     public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable Long id,
             @Valid @RequestBody ProductRequest request) {
-        ProductResponse response = productService.updateProduct(id, request);
+        String username = getCurrentUsername();
+        ProductResponse response = productService.updateProduct(id, request, username);
         return ResponseEntity.ok(response);
     }
     
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        productService.deleteProduct(id);
+        String username = getCurrentUsername();
+        productService.deleteProduct(id, username);
         return ResponseEntity.noContent().build();
     }
 }
