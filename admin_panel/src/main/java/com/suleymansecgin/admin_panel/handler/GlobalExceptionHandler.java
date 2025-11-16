@@ -9,6 +9,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -53,6 +54,45 @@ public class GlobalExceptionHandler {
         
         com.suleymansecgin.admin_panel.handler.Exception<Map<String, String>> exceptionResponse = createExceptionResponse(request, errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
+    }
+    
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<?> handleNoHandlerFoundException(
+            NoHandlerFoundException ex, jakarta.servlet.http.HttpServletRequest request) {
+        String requestPath = request.getRequestURI();
+        
+        // API route'ları için 404 döndür
+        if (requestPath != null && requestPath.startsWith("/api/")) {
+            ErrorMessage errorMessage = new ErrorMessage();
+            errorMessage.setMessageType(com.suleymansecgin.admin_panel.exception.MessageType.GENERAL_EXCEPTION);
+            errorMessage.setOfStatic("API endpoint bulunamadı: " + requestPath);
+            
+            com.suleymansecgin.admin_panel.handler.Exception<ErrorMessage> exceptionResponse = createExceptionResponse(request, errorMessage);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionResponse);
+        }
+        
+        // Static resource istekleri için index.html'e yönlendir (SPA için)
+        // Bu durumda frontend routing handle edecek
+        return ResponseEntity.status(HttpStatus.OK)
+                .header("Content-Type", "text/html")
+                .body(getIndexHtmlContent());
+    }
+    
+    private String getIndexHtmlContent() {
+        // index.html içeriğini döndür
+        // Eğer classpath'te yoksa basit bir HTML döndür
+        try {
+            java.io.InputStream inputStream = getClass().getClassLoader()
+                    .getResourceAsStream("static/index.html");
+            if (inputStream != null) {
+                return new String(inputStream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+            }
+        } catch (java.io.IOException e) {
+            // Fallback HTML
+        }
+        
+        // Fallback: Basit HTML döndür
+        return "<!DOCTYPE html><html><head><title>Admin Panel</title></head><body><div id=\"root\"></div></body></html>";
     }
     
     @ExceptionHandler(java.lang.Exception.class)
