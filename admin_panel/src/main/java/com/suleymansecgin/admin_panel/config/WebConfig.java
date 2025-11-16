@@ -16,7 +16,7 @@ public class WebConfig implements WebMvcConfigurer {
         
         // index.html için (yüksek öncelik)
         registry.addResourceHandler("/index.html")
-                .addResourceLocations("classpath:/static/index.html")
+                .addResourceLocations("classpath:/static/")
                 .setCachePeriod(0);
         
         // Static klasörü ve assets için
@@ -32,13 +32,6 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/*.js", "/*.css", "/*.ico", "/*.png", "/*.jpg", "/*.svg", "/*.woff", "/*.woff2", "/*.ttf", "/*.eot")
                 .addResourceLocations("classpath:/static/")
                 .setCachePeriod(3600);
-        
-        // Tüm diğer static dosyalar için (API route'ları hariç - en son kontrol)
-        // Bu handler sadece /api ile başlamayan path'ler için çalışır
-        registry.addResourceHandler("/**")
-                .addResourceLocations("classpath:/static/")
-                .setCachePeriod(3600)
-                .resourceChain(false);
     }
     
     @Override
