@@ -14,6 +14,11 @@ public class WebConfig implements WebMvcConfigurer {
         // Static resource handler'ı sadece belirli path'ler için yapılandır
         // API route'larını (/api/**) hariç tutmak için sadece static dosyalar için handler ekle
         
+        // index.html için (yüksek öncelik)
+        registry.addResourceHandler("/index.html")
+                .addResourceLocations("classpath:/static/index.html")
+                .setCachePeriod(0);
+        
         // Static klasörü ve assets için
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/static/")
@@ -28,10 +33,12 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/static/")
                 .setCachePeriod(3600);
         
-        // index.html için
-        registry.addResourceHandler("/index.html")
-                .addResourceLocations("classpath:/static/index.html")
-                .setCachePeriod(0);
+        // Tüm diğer static dosyalar için (API route'ları hariç - en son kontrol)
+        // Bu handler sadece /api ile başlamayan path'ler için çalışır
+        registry.addResourceHandler("/**")
+                .addResourceLocations("classpath:/static/")
+                .setCachePeriod(3600)
+                .resourceChain(false);
     }
     
     @Override
