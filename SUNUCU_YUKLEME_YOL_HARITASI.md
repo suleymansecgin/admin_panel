@@ -230,8 +230,46 @@ git clone [GITHUB_REPO_URL] .
 
 ### 5.1 Application Properties Düzenleme
 
+**⚠️ ÖNEMLİ**: Önce projenin klonlandığından emin olun (Bölüm 4).
+
 ```bash
-# application.properties dosyasını düzenle
+# Önce mevcut dizini kontrol edin
+pwd
+# Çıktı şu şekilde olmalı: /var/www/suleymansecgin.com.tr
+
+# Proje yapısının var olduğunu kontrol edin
+ls -la
+# admin_panel klasörünü görmelisiniz
+
+# Eğer admin_panel klasörü yoksa, önce projeyi klonlayın (Bölüm 4'e bakın)
+
+# application.properties dosyasının var olduğunu kontrol edin
+ls -la admin_panel/src/main/resources/
+# application.properties dosyasını görmelisiniz
+
+# Eğer dizin yoksa, oluşturun
+mkdir -p admin_panel/src/main/resources
+
+# Şimdi dosyayı düzenleyin
+nano admin_panel/src/main/resources/application.properties
+```
+
+**Eğer hala "No such file or directory" hatası alıyorsanız:**
+
+```bash
+# 1. Tam dizin yolunu kontrol edin
+cd /var/www/suleymansecgin.com.tr
+
+# 2. Proje yapısını kontrol edin
+ls -la admin_panel/src/main/resources/
+
+# 3. Eğer dosya yoksa, önce projeyi klonlayın
+git clone [GITHUB_REPO_URL] .
+
+# 4. Dosyayı oluşturun (eğer yoksa)
+touch admin_panel/src/main/resources/application.properties
+
+# 5. Şimdi düzenleyin
 nano admin_panel/src/main/resources/application.properties
 ```
 
@@ -242,13 +280,13 @@ nano admin_panel/src/main/resources/application.properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/admin_panel
 spring.jpa.properties.hibernate.default_schema=admin_panel
 spring.datasource.username=admin_user
-spring.datasource.password=GÜVENLİ_ŞİFRE_BURAYA
+spring.datasource.password=ss207615
 
 # Server port (8080 kalabilir, Apache reverse proxy kullanacağız)
 server.port=8080
 
 # JWT Secret (PRODUCTION İÇİN GÜÇLÜ BİR KEY KULLANIN!)
-jwt.secret=ÇOK_GÜVENLİ_VE_UZUN_BİR_SECRET_KEY_BURAYA_EN_AZ_256_BIT
+jwt.secret="7mYu51XtU2UuvUWntKYpYDACIvmHhp5UYpSyRBHxSK8="
 
 # Diğer ayarlar aynı kalabilir
 ```
@@ -259,14 +297,69 @@ jwt.secret=ÇOK_GÜVENLİ_VE_UZUN_BİR_SECRET_KEY_BURAYA_EN_AZ_256_BIT
 
 ### 5.2 Backend Build ve Test
 
+**⚠️ ÖNEMLİ**: Build yapmadan önce proje yapısını kontrol edin.
+
 ```bash
+# Doğru dizine gidin
 cd /var/www/suleymansecgin.com.tr/admin_panel
 
+# pom.xml dosyasının var olduğunu kontrol edin
+ls -la pom.xml
+
+# Eğer pom.xml yoksa, proje yapısını kontrol edin
+pwd
+ls -la
+
+# Eğer admin_panel klasörü boşsa veya yanlış yerdeyseniz:
+# 1. Üst dizine çıkın
+cd /var/www/suleymansecgin.com.tr
+
+# 2. Proje yapısını kontrol edin
+ls -la
+
+# 3. Eğer proje klonlanmamışsa, klonlayın
+git clone [GITHUB_REPO_URL] .
+
+# 4. Tekrar admin_panel dizinine gidin
+cd admin_panel
+
+# 5. pom.xml'in var olduğunu doğrulayın
+ls -la pom.xml
+```
+
+**pom.xml dosyası bulunduktan sonra:**
+
+```bash
 # Maven ile build
 mvn clean package -DskipTests
 
 # Build başarılı olursa, JAR dosyası şurada olacak:
 # target/admin_panel-0.0.1-SNAPSHOT.jar
+```
+
+**Eğer hala "no POM" hatası alıyorsanız:**
+
+```bash
+# 1. Mevcut dizini kontrol edin
+pwd
+# Çıktı: /var/www/suleymansecgin.com.tr/admin_panel olmalı
+
+# 2. Dosya yapısını kontrol edin
+ls -la
+
+# 3. Eğer pom.xml yoksa, projeyi yeniden klonlayın
+cd /var/www/suleymansecgin.com.tr
+rm -rf admin_panel  # Dikkat: Bu mevcut dosyaları siler!
+git clone [GITHUB_REPO_URL] .
+
+# 4. Admin_panel dizinine gidin
+cd admin_panel
+
+# 5. pom.xml'i kontrol edin
+cat pom.xml | head -20
+
+# 6. Şimdi build yapın
+mvn clean package -DskipTests
 ```
 
 ### 5.3 Backend'i Systemd Service Olarak Yapılandırma
