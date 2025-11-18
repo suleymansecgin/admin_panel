@@ -301,7 +301,7 @@ jwt.secret="7mYu51XtU2UuvUWntKYpYDACIvmHhp5UYpSyRBHxSK8="
 
 ```bash
 # Doğru dizine gidin
-cd /var/www/suleymansecgin.com.tr/admin_panel
+cd /var/www/suleymansecgin.com.tr/admin_panel/admin_panel
 
 # pom.xml dosyasının var olduğunu kontrol edin
 ls -la pom.xml
@@ -321,7 +321,7 @@ ls -la
 git clone [GITHUB_REPO_URL] .
 
 # 4. Tekrar admin_panel dizinine gidin
-cd admin_panel
+cd admin_panel/admin_panel
 
 # 5. pom.xml'in var olduğunu doğrulayın
 ls -la pom.xml
@@ -334,7 +334,7 @@ ls -la pom.xml
 mvn clean package -DskipTests
 
 # Build başarılı olursa, JAR dosyası şurada olacak:
-# target/admin_panel-0.0.1-SNAPSHOT.jar
+# /var/www/suleymansecgin.com.tr/admin_panel/admin_panel/target/admin_panel-0.0.1-SNAPSHOT.jar
 ```
 
 **Eğer hala "no POM" hatası alıyorsanız:**
@@ -342,7 +342,7 @@ mvn clean package -DskipTests
 ```bash
 # 1. Mevcut dizini kontrol edin
 pwd
-# Çıktı: /var/www/suleymansecgin.com.tr/admin_panel olmalı
+# Çıktı: /var/www/suleymansecgin.com.tr/admin_panel/admin_panel olmalı
 
 # 2. Dosya yapısını kontrol edin
 ls -la
@@ -353,7 +353,7 @@ rm -rf admin_panel  # Dikkat: Bu mevcut dosyaları siler!
 git clone [GITHUB_REPO_URL] .
 
 # 4. Admin_panel dizinine gidin
-cd admin_panel
+cd admin_panel/admin_panel
 
 # 5. pom.xml'i kontrol edin
 cat pom.xml | head -20
@@ -365,11 +365,11 @@ mvn clean package -DskipTests
 ### 5.3 Backend'i Systemd Service Olarak Yapılandırma
 
 ```bash
-# Systemd service dosyası oluştur
+# Systemd service dosyasını oluştur/düzenle
 sudo nano /etc/systemd/system/admin-panel.service
 ```
 
-**Service dosyası içeriği:**
+**Service dosyası içeriği (yeni backend dizinine göre güncellenmiş):**
 
 ```ini
 [Unit]
@@ -379,8 +379,8 @@ After=network.target postgresql.service
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/var/www/suleymansecgin.com.tr/admin_panel
-ExecStart=/usr/bin/java -jar /var/www/suleymansecgin.com.tr/admin_panel/target/admin_panel-0.0.1-SNAPSHOT.jar
+WorkingDirectory=/var/www/suleymansecgin.com.tr/admin_panel/admin_panel
+ExecStart=/usr/bin/java -jar /var/www/suleymansecgin.com.tr/admin_panel/admin_panel/target/admin_panel-0.0.1-SNAPSHOT.jar
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -584,7 +584,7 @@ sudo chown -R www-data:www-data /var/www/suleymansecgin.com.tr
 sudo chmod -R 755 /var/www/suleymansecgin.com.tr
 
 # Frontend build klasörü için özel izinler
-sudo chmod -R 755 /var/www/suleymansecgin.com.tr/admin_panel/admin_panel-react/dist
+sudo chmod -R 755 /var/www/suleymansecgin.com.tr/admin_panel/admin_panel/admin_panel-react/dist
 ```
 
 ---

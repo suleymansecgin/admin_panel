@@ -19,7 +19,7 @@ import './App.css'
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <Router basename="/admin_panel">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

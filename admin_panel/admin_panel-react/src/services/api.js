@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = '/api'
+const API_BASE_URL = '/admin_panel/api'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -53,7 +53,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         localStorage.removeItem('accessToken')
         localStorage.removeItem('refreshToken')
-        window.location.href = '/login'
+        window.location.href = '/admin_panel/login'
         return Promise.reject(refreshError)
       }
     }
