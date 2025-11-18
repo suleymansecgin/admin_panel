@@ -510,7 +510,7 @@ npm run build
 sudo nano /etc/apache2/sites-available/suleymansecgin.com.tr.conf
 ```
 
-**Virtual host yapılandırması:**
+**Virtual host yapılandırması (HTTP - Port 80):**
 
 ```apache
 <VirtualHost *:80>
@@ -530,12 +530,13 @@ sudo nano /etc/apache2/sites-available/suleymansecgin.com.tr.conf
         AllowOverride All
         Require all granted
         
-        # React Router için - /admin_panel altında çalışması için
+        # React Router için - SPA routing desteği
         RewriteEngine On
         RewriteBase /admin_panel/
-        RewriteRule ^index\.html$ - [L]
+        # Mevcut dosyaları doğrudan sun
         RewriteCond %{REQUEST_FILENAME} !-f
         RewriteCond %{REQUEST_FILENAME} !-d
+        # Tüm istekleri index.html'e yönlendir
         RewriteRule . /admin_panel/index.html [L]
     </Directory>
 
@@ -552,6 +553,60 @@ sudo nano /etc/apache2/sites-available/suleymansecgin.com.tr.conf
     # Log dosyaları
     ErrorLog ${APACHE_LOG_DIR}/suleymansecgin-error.log
     CustomLog ${APACHE_LOG_DIR}/suleymansecgin-access.log combined
+</VirtualHost>
+```
+
+**Virtual host yapılandırması (HTTPS - Port 443):**
+
+Eğer SSL sertifikası kurulduysa, HTTPS için de aynı yapılandırmayı ekleyin:
+
+```apache
+<VirtualHost *:443>
+    ServerName suleymansecgin.com.tr
+    ServerAlias www.suleymansecgin.com.tr
+    ServerAdmin webmaster@suleymansecgin.com.tr
+
+    # SSL Sertifika yolları (Certbot otomatik ekler, kontrol edin)
+    SSLEngine on
+    SSLCertificateFile /etc/letsencrypt/live/suleymansecgin.com.tr/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/suleymansecgin.com.tr/privkey.pem
+    Include /etc/letsencrypt/options-ssl-apache.conf
+
+    # Ana DocumentRoot
+    DocumentRoot /var/www/suleymansecgin.com.tr
+
+    # /admin_panel için Alias ve Directory yapılandırması
+    Alias /admin_panel /var/www/suleymansecgin.com.tr/admin_panel/admin_panel-react/dist
+
+    # Frontend dosyaları için
+    <Directory /var/www/suleymansecgin.com.tr/admin_panel/admin_panel-react/dist>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+        
+        # React Router için - SPA routing desteği
+        RewriteEngine On
+        RewriteBase /admin_panel/
+        # Mevcut dosyaları doğrudan sun
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        # Tüm istekleri index.html'e yönlendir
+        RewriteRule . /admin_panel/index.html [L]
+    </Directory>
+
+    # Backend API için reverse proxy - /admin_panel/api altında
+    ProxyPreserveHost On
+    ProxyPass /admin_panel/api http://localhost:8080/api
+    ProxyPassReverse /admin_panel/api http://localhost:8080/api
+
+    # CORS headers
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Authorization, Content-Type"
+
+    # Log dosyaları
+    ErrorLog ${APACHE_LOG_DIR}/suleymansecgin-ssl-error.log
+    CustomLog ${APACHE_LOG_DIR}/suleymansecgin-ssl-access.log combined
 </VirtualHost>
 ```
 
@@ -771,17 +826,51 @@ sudo netstat -tulpn | grep 8080
 ps aux | grep java
 ```
 
-### Frontend Yüklenmiyor
+### Frontend Yüklenmiyor (404 Hatası)
 
 ```bash
-# Apache loglarını kontrol et
+# 1. Apache loglarını kontrol et
 sudo tail -f /var/log/apache2/suleymansecgin-error.log
+sudo tail -f /var/log/apache2/suleymansecgin-ssl-error.log
 
-# Dosya izinlerini kontrol et
+# 2. Frontend build klasörünün var olduğunu kontrol et
 ls -la /var/www/suleymansecgin.com.tr/admin_panel/admin_panel-react/dist
+# index.html dosyasının var olduğunu kontrol et
+ls -la /var/www/suleymansecgin.com.tr/admin_panel/admin_panel-react/dist/index.html
 
-# Apache yapılandırmasını test et
+# 3. Dosya izinlerini kontrol et ve düzelt
+sudo chown -R www-data:www-data /var/www/suleymansecgin.com.tr
+sudo chmod -R 755 /var/www/suleymansecgin.com.tr
+
+# 4. Apache yapılandırmasını test et
 sudo apache2ctl configtest
+
+# 5. Apache virtual host yapılandırmasını kontrol et
+sudo apache2ctl -S
+# suleymansecgin.com.tr için aktif siteyi görmelisiniz
+
+# 6. Aktif siteleri kontrol et
+ls -la /etc/apache2/sites-enabled/
+# suleymansecgin.com.tr.conf dosyasının var olduğunu kontrol edin
+
+# 7. Apache modüllerinin aktif olduğunu kontrol et
+sudo a2enmod rewrite
+sudo a2enmod proxy
+sudo a2enmod proxy_http
+sudo a2enmod headers
+sudo a2enmod ssl
+
+# 8. Frontend build'in yapıldığını kontrol et (eğer yoksa build yap)
+cd /var/www/suleymansecgin.com.tr/admin_panel/admin_panel-react
+npm run build
+# Build başarılı olmalı ve dist klasörü oluşmalı
+
+# 9. Apache'yi yeniden başlat
+sudo systemctl restart apache2
+
+# 10. Doğrudan dosya erişimini test et
+curl http://localhost/admin_panel/
+curl https://localhost/admin_panel/
 ```
 
 ### Veritabanı Bağlantı Hatası
