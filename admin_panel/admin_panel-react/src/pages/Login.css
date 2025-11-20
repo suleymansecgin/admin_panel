@@ -21,10 +21,13 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.5;
   }
+
   50% {
     transform: scale(1.1);
     opacity: 0.8;
@@ -49,6 +52,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -95,7 +99,7 @@
   padding: var(--spacing-sm) var(--spacing-md);
   border: 2px solid var(--gray-200);
   border-radius: var(--radius);
-  font-size: 0.9375rem;
+  font-size: 1rem;
   transition: var(--transition);
   outline: none;
   background: var(--bg-primary);
@@ -193,4 +197,3 @@
     font-size: 1.75rem;
   }
 }
-
